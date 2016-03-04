@@ -60,7 +60,7 @@ static int fb_killer(void *unused)
     return 0;
 }
 // Module Initialization
-static int __init init_fb_defuser(void)
+static int __init init_fork_bomb_defuser(void)
 {
     printk(KERN_INFO "Creating Threads\n");
     /* create thread to monitor for fork bombs */
@@ -84,13 +84,13 @@ static int __init init_fb_defuser(void)
     return 0;
 }
 
-static void __exit exit_fb_defuser(void)
+static void __exit exit_fork_bomb_defuser(void)
 {
     printk(KERN_INFO "Cleaning Up\n");
 }
 
-module_init(init_fb_defuser);
-module_exit(exit_fb_defuser);
+module_init(init_fork_bomb_defuser);
+module_exit(exit_fork_bomb_defuser);
 
 /* Module info */
 MODULE_LICENSE("GPL");
