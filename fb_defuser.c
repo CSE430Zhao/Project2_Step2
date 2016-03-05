@@ -21,12 +21,12 @@ unsigned long bomb_pid = 0;
 // Function executed by kernel thread
 static int fb_monitor(void *unused)
 {
-    while (1)
+    while (!kthread_should_stop())
     {
         mutex_lock(&my_lock);      /* acquire mutex lock */
         if (bomb_pid < 2)          /* 0 is root, 1 is init */
         {
-            printk(KERN_INFO "Fork Bomb Monitor Running\n");
+            printk(KERN_INFO "Fork Bomb Monitor running\n");
             bomb_pid++;
             ssleep(5);
         }else{
@@ -34,14 +34,14 @@ static int fb_monitor(void *unused)
         }
         mutex_unlock(&my_lock);    /* release mutex lock */
     }
-    printk(KERN_INFO "Fork Bomb Monitor Stopping\n");
+    printk(KERN_INFO "Fork Bomb Monitor stopping\n");
     do_exit(0);
     return 0;
 }
 // Function executed by kernel thread
 static int fb_killer(void *unused)
 {
-    while (1)
+    while (!kthread_should_stop())
     {
         mutex_lock(&my_lock);      /* acquire mutex lock */
         if (bomb_pid > 1)          /* 0 is root, 1 is init */
@@ -53,7 +53,7 @@ static int fb_killer(void *unused)
         }
         mutex_unlock(&my_lock);    /* release mutex lock */
     }
-    printk(KERN_INFO "Fork Bomb Killer Stopping\n");
+    printk(KERN_INFO "Fork Bomb Killer stopping\n");
     do_exit(0);
     return 0;
 }

@@ -14,15 +14,15 @@ static struct task_struct *thread_fbm;    /* fork bomb monitoring task */
 static struct task_struct *thread_fbk;    /* fork bomb killing task */
 
 /* Shared Data */
-DEFINE_MUTEX(my_lock);
-unsigned long bomb_pid = 0;
+DEFINE_MUTEX(fb_lock);
+unsigned long bomb_pid = 0;               /*  */
 
 // Function executed by kernel thread
 static int fb_monitor(void *unused)
 {
-    while (1)
+    while (!kthread_should_stop())
     {
-        mutex_lock(&my_lock);      /* acquire mutex lock */
+        mutex_lock(&fb_lock);      /* acquire mutex lock */
         if (bomb_pid < 2)          /* 0 is root, 1 is init */
         {
             /*********************************************************
@@ -32,18 +32,18 @@ static int fb_monitor(void *unused)
         }else{
             /* wait for fork bomb to be killed */
         }
-        mutex_unlock(&my_lock);    /* release mutex lock */
+        mutex_unlock(&fb_lock);    /* release mutex lock */
     }
-    printk(KERN_INFO "Fork Bomb Monitor Stopping\n");
+    printk(KERN_INFO "Fork Bomb Monitor stopping\n");
     do_exit(0);
     return 0;
 }
 // Function executed by kernel thread
 static int fb_killer(void *unused)
 {
-    while (1)
+    while (!kthread_should_stop())
     {
-        mutex_lock(&my_lock);      /* acquire mutex lock */
+        mutex_lock(&fb_lock);      /* acquire mutex lock */
         if (bomb_pid > 1)          /* 0 is root, 1 is init */
         {
             /*******************************************
@@ -53,16 +53,16 @@ static int fb_killer(void *unused)
         }else{
             /* wait for fork bomb to be detected */
         }
-        mutex_unlock(&my_lock);    /* release mutex lock */
+        mutex_unlock(&fb_lock);    /* release mutex lock */
     }
-    printk(KERN_INFO "Fork Bomb Killer Stopping\n");
+    printk(KERN_INFO "Fork Bomb Killer stopping\n");
     do_exit(0);
     return 0;
 }
 // Module Initialization
 static int __init init_fork_bomb_defuser(void)
 {
-    printk(KERN_INFO "Creating Threads\n");
+    printk(KERN_INFO "Creating threads\n");
     /* create thread to monitor for fork bombs */
 //    thread_fbm = kthread_create(fb_monitor, NULL, "forkbombmonitor");
     thread_fbm = kthread_run(fb_monitor, NULL, "forkbombmonitor");
