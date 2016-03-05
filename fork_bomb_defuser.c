@@ -1,9 +1,3 @@
-/*
- *  Adam Mastov, Christopher David Monken, Fan, Martin Kuna
- *  Project 2 part 2
- *  CSE430
- */
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -15,7 +9,8 @@ static struct task_struct *thread_fbk;    /* fork bomb killing task */
 
 /* Shared Data */
 DEFINE_MUTEX(fb_lock);
-unsigned long bomb_pid = 0;               /*  */
+unsigned long bomb_pid = 0;    /* from test fb_defuser may need different */
+                         /* buffer for actual monitor to killer communication */
 
 // Function executed by kernel thread
 static int fb_monitor(void *unused)
@@ -64,22 +59,18 @@ static int __init init_fork_bomb_defuser(void)
 {
     printk(KERN_INFO "Creating threads\n");
     /* create thread to monitor for fork bombs */
-//    thread_fbm = kthread_create(fb_monitor, NULL, "forkbombmonitor");
     thread_fbm = kthread_run(fb_monitor, NULL, "forkbombmonitor");
     if (thread_fbm)
     {
         printk(KERN_INFO "Fork Bomb Monitor thread created successfully\n");
-//        wake_up_process(thread_fbm);
     }else{
         printk(KERN_INFO "Fork Bomb Monitor thread creation failed\n");
     }
     /* create thread to kill identified fork bomb */
-//    thread_fbk = kthread_create(fb_killer, NULL, "forkbombkiller");
     thread_fbk = kthread_run(fb_killer, NULL, "forkbombkiller");
     if (thread_fbk)
     {
         printk(KERN_INFO "Fork Bomb Killer thread created successfully\n");
-//        wake_up_process(thread_fbk);
     }else{
         printk(KERN_INFO "Fork Bomb Killer thread creation failed\n");
     }
