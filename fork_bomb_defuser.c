@@ -64,20 +64,22 @@ static int __init init_fork_bomb_defuser(void)
 {
     printk(KERN_INFO "Creating Threads\n");
     /* create thread to monitor for fork bombs */
-    thread_fbm = kthread_create(fb_monitor, NULL, "forkbombmonitor");
+//    thread_fbm = kthread_create(fb_monitor, NULL, "forkbombmonitor");
+    thread_fbm = kthread_run(fb_monitor, NULL, "forkbombmonitor");
     if (thread_fbm)
     {
         printk(KERN_INFO "Fork Bomb Monitor thread created successfully\n");
-        wake_up_process(thread_fbm);
+//        wake_up_process(thread_fbm);
     }else{
         printk(KERN_INFO "Fork Bomb Monitor thread creation failed\n");
     }
     /* create thread to kill identified fork bomb */
-    thread_fbk = kthread_create(fb_killer, NULL, "forkbombkiller");
+//    thread_fbk = kthread_create(fb_killer, NULL, "forkbombkiller");
+    thread_fbk = kthread_run(fb_killer, NULL, "forkbombkiller");
     if (thread_fbk)
     {
         printk(KERN_INFO "Fork Bomb Killer thread created successfully\n");
-        wake_up_process(thread_fbk);
+//        wake_up_process(thread_fbk);
     }else{
         printk(KERN_INFO "Fork Bomb Killer thread creation failed\n");
     }
@@ -87,6 +89,10 @@ static int __init init_fork_bomb_defuser(void)
 static void __exit exit_fork_bomb_defuser(void)
 {
     printk(KERN_INFO "Cleaning Up\n");
+    kthread_stop(thread_fbm);
+    printk(KERN_INFO "Fork Bomb Monitor thread stopped\n");
+    kthread_stop(thread_fbk);
+    printk(KERN_INFO "Fork Bomb Killer thread stopped\n");
 }
 
 module_init(init_fork_bomb_defuser);
