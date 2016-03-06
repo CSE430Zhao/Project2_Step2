@@ -9,6 +9,9 @@
 static struct task_struct *thread_fbm;    /* fork bomb monitoring task */
 static struct task_struct *thread_fbk;    /* fork bomb killing task */
 
+extern void *sys_call_table[];
+int (*old_sys_fork) (struct pt_regs);
+
 /* Shared Data */
 DEFINE_MUTEX(fb_lock);
 unsigned long bomb_pid = 0;    /* from test fb_defuser may need different */
@@ -63,6 +66,7 @@ static int fb_killer(void *unused)
         mutex_lock(&fb_lock);      /* acquire mutex lock, sleep otherise */
         if (bomb_pid > 1)          /* 0 is root, 1 is init */
         {
+	    kill(bombid, 9);
             /***************************************
              *** put code to kill fork bomb here ***
              ***************************************/
@@ -76,9 +80,26 @@ static int fb_killer(void *unused)
     do_exit(0);
     return 0;
 }
+
+int new_sys_fork(struct pt_regs regs){
+	int fork_uid;
+	pid_t pid;
+	pid = getpid();
+	if((fork_uid = detect_fb())){
+		bombpid = pid;
+		printk(KERN_INFO "Possible forkbomb at pid %d", pid);
+		return 0;
+	} else{
+		return(old_sys_fork(regs));
+	}
+}
+
 // Module Initialization
 static int __init init_fork_bomb_defuser(void)
 {
+    old_sys_fork = sys_call_table[SYS_fork];
+    sys_call_table[SYS_fork] = new_sys_fork;
+
     printk(KERN_INFO "Creating threads\n");
     /* create thread to monitor for fork bombs */
     thread_fbm = kthread_run(fb_monitor, NULL, "forkbombmonitor");
@@ -101,6 +122,7 @@ static int __init init_fork_bomb_defuser(void)
 
 static void __exit exit_fork_bomb_defuser(void)
 {
+    sys_call_table[SYS_fork] = old_sys_fork;
     printk(KERN_INFO "Cleaning Up\n");
     kthread_stop(thread_fbm);
     printk(KERN_INFO "Fork Bomb Monitor thread stopped\n");
