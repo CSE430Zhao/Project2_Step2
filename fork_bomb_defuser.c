@@ -34,12 +34,12 @@ inline int detect_fb(){
 	return 0;
 }
 
-// Function executed by kernel thread
+// Monitor function - kernel thread
 static int fb_monitor(void *unused)
 {
     while (!kthread_should_stop())
     {
-        mutex_lock(&fb_lock);      /* acquire mutex lock */
+        mutex_lock(&fb_lock);      /* acquire mutex lock, sleep otherwise */
         if (bomb_pid < 2)          /* 0 is root, 1 is init */
         {
             /*********************************************************
@@ -55,17 +55,17 @@ static int fb_monitor(void *unused)
     do_exit(0);
     return 0;
 }
-// Function executed by kernel thread
+// Kill function - kernel thread
 static int fb_killer(void *unused)
 {
     while (!kthread_should_stop())
     {
-        mutex_lock(&fb_lock);      /* acquire mutex lock */
+        mutex_lock(&fb_lock);      /* acquire mutex lock, sleep otherise */
         if (bomb_pid > 1)          /* 0 is root, 1 is init */
         {
-            /*******************************************
-             *** put code to kill for fork bomb here ***
-             *******************************************/
+            /***************************************
+             *** put code to kill fork bomb here ***
+             ***************************************/
             bomb_pid = 0;      /* reset bomb_pid once the fork bomb is killed */
         }else{
             /* wait for fork bomb to be detected */
