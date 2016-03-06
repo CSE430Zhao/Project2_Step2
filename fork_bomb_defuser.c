@@ -12,25 +12,25 @@ DEFINE_MUTEX(fb_lock);
 unsigned long bomb_pid = 0;    /* from test fb_defuser may need different */
                          /* buffer for actual monitor to killer communication */
 
-inline int detect_fb(){
-	unsigned long cur_time = 0;
-	int forks_per_sec = 0;
-	struct task_struct *p;
-
-	cur_time = jiffies;
-	
-	read_lock(&tasklist_lock);
-	for_each_task(p){
-		if(p->uid == current->uid){
-			if((cur_time-(p->start_time)) <= 100){
-				forks_per_sec++;
-			}
-	}
-	if(forks_per_sec > 50){
-		return current->uid;
-	}
-	return 0;
-}
+//inline int detect_fb(){
+//	unsigned long cur_time = 0;
+//	int forks_per_sec = 0;
+//	struct task_struct *p;
+//
+//	cur_time = jiffies;
+//	
+//	read_lock(&tasklist_lock);
+//	for_each_task(p){
+//		if(p->uid == current->uid){
+//			if((cur_time-(p->start_time)) <= 100){
+//				forks_per_sec++;
+//			}
+//	}
+//	if(forks_per_sec > 50){
+//		return current->uid;
+//	}
+//	return 0;
+//}
 
 // Monitor function - kernel thread
 static int fb_monitor(void *unused)
