@@ -4,12 +4,10 @@
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
-#include <sys/syscall.h>
 
 static struct task_struct *thread_fbm;    /* fork bomb monitoring task */
 static struct task_struct *thread_fbk;    /* fork bomb killing task */
 
-/* Shared Data */
 DEFINE_MUTEX(fb_lock);
 unsigned long bomb_pid = 0;    /* from test fb_defuser may need different */
                          /* buffer for actual monitor to killer communication */
