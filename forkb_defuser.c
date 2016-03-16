@@ -4,6 +4,10 @@
 #include <linux/kthread.h>
 #include <linux/delay.h>
 #include <linux/mutex.h>
+#include <linux/sched.h>
+#include <linux/cred.h>
+#include <asm/unistd.h>
+#include <linux/types.h>
 
 static struct task_struct *thread_fbm;    /* fork bomb monitoring task */
 static struct task_struct *thread_fbk;    /* fork bomb killing task */
@@ -21,6 +25,8 @@ static int fb_monitor(void *unused)
         if (bomb_pid < 2)          /* 0 is root, 1 is init */
         {
             printk(KERN_INFO "Fork Bomb Monitor running\n");
+            printk(KERN_INFO "Current UID = %u\n", get_current_user()->uid);
+//            printk(KERN_INFO "Current UID = %u\n", getuid());
             bomb_pid++;
             ssleep(5);
         }else{
@@ -52,7 +58,7 @@ static int fb_killer(void *unused)
     return 0;
 }
 // Module initialization
-static int __init init_fb_defuser(void)
+static int __init init_forkb_defuser(void)
 {
     printk(KERN_INFO "Creating Threads\n");
     /* create thread to monitor for fork bombs */
@@ -73,7 +79,7 @@ static int __init init_fb_defuser(void)
     return 0;
 }
 
-static void __exit exit_fb_defuser(void)
+static void __exit exit_forkb_defuser(void)
 {
     kthread_stop(thread_fbm);
     printk(KERN_INFO "Fork Bomb Monitor thread stopped\n");
@@ -81,8 +87,8 @@ static void __exit exit_fb_defuser(void)
     printk(KERN_INFO "Fork Bomb Killer thread stopped\n");
 }
 
-module_init(init_fb_defuser);
-module_exit(exit_fb_defuser);
+module_init(init_forkb_defuser);
+module_exit(exit_forkb_defuser);
 
 /* Module info */
 MODULE_LICENSE("GPL");

@@ -3,24 +3,30 @@
 #include <linux/init.h>
 #include <linux/sched.h>
 
-int bomb_pid = 1175;
-// Module initialization
-struct task_struct *p;
+#include <linux/types.h>
 
+struct task_struct *task;
+int bomb_pid = 0;
+int child_pid = 0;
+struct list_head *p;
+struct task_struct *my_child;
+
+// Module initialization
 static int __init init_group_ids(void)
 {
-    for_each_process(p)
+
+    for_each_process(task)
     {
-        if (p->pid == bomb_pid)
+
+        printk(KERN_INFO "Parent PID is %d\n", task->pid);
+
+        list_for_each_entry(p, &task->children)
         {
-            struct list_head *list;
-            struct task_struct *task;
-            list_for_each (list, &p->children)
-            {
-                task = list_entry(list, struct task_struct, children);
-                printk(KERN_INFO "Parent PID is %d and Child PID is  %d\n", p->pid, task->pid);
-            }
+            my_child = list_entry(p, struct task_struct, children);
+            printk(KERN_INFO "%d\n", my_child->pid);
         }
+        
+        
     }
 /*
 struct list_head *p;

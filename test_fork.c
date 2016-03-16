@@ -20,14 +20,14 @@ int main()
 */
     pid = fork();  
     printf("Forking\n");
-//    pid = fork();  
-//    printf("Forking\n");
-//    pid = fork();  
-//    printf("Forking\n");
-//    pid = fork();  
-//    printf("Forking\n");
-//    pid = fork();  
-//    printf("Forking\n");
+    pid = fork();  
+    printf("Forking\n");
+    pid = fork();  
+    printf("Forking\n");
+    pid = fork();  
+    printf("Forking\n");
+    pid = fork();  
+    printf("Forking\n");
     
     while(1) {}
     return 0;
